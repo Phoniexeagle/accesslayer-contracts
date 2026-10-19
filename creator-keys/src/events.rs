@@ -2482,6 +2482,73 @@ pub fn co_creator_removed_topics(
     )
 }
 
+// ============================================================================
+// Co-creator contract with permission tiers (#791)
+// ============================================================================
+
+/// Event name for a co-creator being added with a permission role.
+pub const CO_CREATOR_ADDED_EVENT_NAME: Symbol = symbol_short!("cc_add");
+
+/// Stable co-creator added event payload for downstream indexers.
+///
+/// Event shape:
+/// - topics: `(CO_CREATOR_ADDED_EVENT_NAME, key_id, wallet)`
+/// - data: `CoCreatorAddedEvent`
+///
+/// Emitted inside `add_co_creator` when the primary creator grants a wallet a
+/// co-creator role on their key.
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[contracttype]
+pub struct CoCreatorAddedEvent {
+    /// Creator key the co-creator was added to.
+    pub key_id: Address,
+    /// Wallet granted the co-creator role.
+    pub wallet: Address,
+    /// Permission tier granted to the wallet.
+    pub role: crate::CoCreatorRole,
+}
+
+/// Shared co-creator added event topics tuple.
+pub fn co_creator_added_topics(key_id: &Address, wallet: &Address) -> (Symbol, Address, Address) {
+    (
+        CO_CREATOR_ADDED_EVENT_NAME,
+        key_id.clone(),
+        wallet.clone(),
+    )
+}
+
+/// Stable co-creator removed event payload carrying the removed role.
+///
+/// Event shape:
+/// - topics: `(CO_CREATOR_REMOVED_EVENT_NAME, key_id, wallet)`
+/// - data: `CoCreatorRemovedWithRoleEvent`
+///
+/// Emitted inside `remove_co_creator` when the primary creator revokes a
+/// wallet's co-creator role. Kept separate from [`CoCreatorRemovedEvent`] so
+/// the existing #791 payload shape stays byte-for-byte stable for indexers.
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[contracttype]
+pub struct CoCreatorRemovedWithRoleEvent {
+    /// Creator key the co-creator was removed from.
+    pub key_id: Address,
+    /// Wallet whose co-creator role was revoked.
+    pub wallet: Address,
+    /// Permission tier the wallet held before removal.
+    pub role: crate::CoCreatorRole,
+}
+
+/// Shared co-creator removed-with-role event topics tuple.
+pub fn co_creator_removed_with_role_topics(
+    key_id: &Address,
+    wallet: &Address,
+) -> (Symbol, Address, Address) {
+    (
+        CO_CREATOR_REMOVED_EVENT_NAME,
+        key_id.clone(),
+        wallet.clone(),
+    )
+}
+
 /// Event name for dividend reinvestment.
 pub const DIVIDEND_REINVESTED_EVENT_NAME: Symbol = symbol_short!("div_reinv");
 
